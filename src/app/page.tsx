@@ -3,7 +3,7 @@
 import {Button} from '@/components/ui/button';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {portfolioSummary} from '@/ai/flows/portfolio-summary';
-import {useEffect, useState} from 'react';
+import {useEffect, useState, useRef} from 'react';
 
 interface PortfolioItem {
   title: string;
@@ -62,6 +62,117 @@ async function summarizePortfolioItem(item: PortfolioItem) {
   }
 }
 
+const AnimatedText = ({text}: {text: string}) => {
+  const [displayText, setDisplayText] = useState('');
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (index < text.length) {
+      const timeout = setTimeout(() => {
+        setDisplayText(prevText => prevText + text[index]);
+        setIndex(prevIndex => prevIndex + 1);
+      }, 50); // Adjust the typing speed here
+
+      return () => clearTimeout(timeout);
+    }
+  }, [index, text]);
+
+  return <>{displayText}</>;
+};
+
+function getRandomColor() {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
+const GlowingLines = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [lines, setLines] = useState<
+    {x: number; y: number; color: string; length: number}[]
+  >([]);
+
+  useEffect(() => {
+    const generateLines = () => {
+      if (!containerRef.current) return;
+      const containerWidth = containerRef.current.clientWidth;
+      const containerHeight = containerRef.current.clientHeight;
+      const newLines = [];
+      for (let i = 0; i < 5; i++) {
+        const x = Math.random() * containerWidth;
+        const y = Math.random() * containerHeight;
+        const color = getRandomColor();
+        const length = Math.random() * 100 + 50; // Random length between 50 and 150
+        newLines.push({x, y, color, length});
+      }
+      setLines(newLines);
+    };
+
+    generateLines();
+
+    const animationFrame = () => {
+      setLines(prevLines =>
+        prevLines.map(line => {
+          // Simple movement logic: adjust x and y slightly
+          let newX = line.x + (Math.random() - 0.5) * 2;
+          let newY = line.y + (Math.random() - 0.5) * 2;
+
+          // Keep lines within container bounds
+          if (containerRef.current) {
+            const containerWidth = containerRef.current.clientWidth;
+            const containerHeight = containerRef.current.clientHeight;
+            newX = Math.max(0, Math.min(newX, containerWidth));
+            newY = Math.max(0, Math.min(newY, containerHeight));
+          }
+
+          return {...line, x: newX, y: newY};
+        })
+      );
+      requestAnimationFrame(animationFrame);
+    };
+
+    const frameId = requestAnimationFrame(animationFrame);
+
+    const handleResize = () => {
+      generateLines();
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      className="absolute inset-0 overflow-hidden"
+      style={{zIndex: 0}}
+    >
+      {lines.map((line, index) => (
+        <div
+          key={index}
+          style={{
+            position: 'absolute',
+            left: line.x,
+            top: line.y,
+            width: line.length,
+            height: '2px',
+            background: `linear-gradient(to right, ${line.color}, transparent)`,
+            opacity: 0.7,
+            animation: 'glow 5s infinite alternate',
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
 export default function Home() {
   const [summaries, setSummaries] = useState<{[key: string]: string}>({});
 
@@ -78,53 +189,95 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="container mx-auto py-12">
+    <div className="relative overflow-hidden">
+      <GlowingLines />
+
       {/* Hero Section */}
-      <section className="text-center mb-16">
-        <h1 className="text-5xl font-bold text-primary mb-4">
-          Transforming Ideas into Intelligent Solutions
+      <section
+        className="relative z-10 text-center py-24 md:py-36"
+        style={{
+          background: 'linear-gradient(135deg, #1A237E 0%, #0D47A1 100%)',
+          color: '#F5F5F5',
+        }}
+      >
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
+          Transforming Ideas into{' '}
+          <span style={{color: '#00BCD4'}}>
+            <AnimatedText text="Intelligent Solutions" />
+          </span>
         </h1>
-        <p className="text-lg text-foreground mb-8">
-          We are Thinknexus, an AI-powered product development and software outsourcing company.
-          Our mission is to transform your ideas into reality through cutting-edge technology and innovative
-          solutions.
+        <p className="text-lg md:text-xl mb-8 px-4 md:px-0">
+          We are Thinknexus, an AI-powered product development and software
+          outsourcing company. Our mission is to transform your ideas into
+          reality through cutting-edge technology and innovative solutions.
         </p>
-        <Button className="bg-accent text-background hover:bg-accent-foreground">Explore Our Services</Button>
+        <Button className="bg-teal-500 text-white hover:bg-teal-700">
+          Explore Our Services
+        </Button>
       </section>
 
       {/* Featured Projects Section */}
-      <section className="mb-16">
-        <h2 className="text-3xl font-semibold text-primary mb-4">Featured Projects</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {portfolioItems.map((item, index) => (
-            <Card key={index}>
-              <CardHeader>
-                <CardTitle>{item.title}</CardTitle>
-                <img
-                  src={item.imageUrl}
-                  alt={item.title}
-                  className="rounded-md w-full h-48 object-cover mb-4"
-                />
-                <CardDescription>{item.projectDetails.substring(0, 100)}...</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <h3 className="text-xl font-semibold text-primary mb-2">Summary</h3>
-                <p className="text-foreground mb-4">{summaries[item.title] || 'Loading summary...'}</p>
-                <Button className="bg-accent text-background hover:bg-accent-foreground">Learn More</Button>
-              </CardContent>
-            </Card>
-          ))}
+      <section className="relative z-10 py-16">
+        <div className="container mx-auto">
+          <h2 className="text-3xl font-semibold text-primary mb-8 text-center">
+            Featured Projects
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {portfolioItems.map((item, index) => (
+              <Card
+                key={index}
+                className="hover:shadow-2xl transition-shadow duration-300"
+              >
+                <CardHeader>
+                  <CardTitle className="text-xl font-semibold text-primary">
+                    {item.title}
+                  </CardTitle>
+                  <img
+                    src={item.imageUrl}
+                    alt={item.title}
+                    className="rounded-md w-full h-48 object-cover mb-4"
+                  />
+                  <CardDescription>
+                    {item.projectDetails.substring(0, 100)}...
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <h3 className="text-lg font-semibold text-primary mb-2">
+                    Summary
+                  </h3>
+                  <p className="text-foreground mb-4">
+                    {summaries[item.title] || 'Loading summary...'}
+                  </p>
+                  <Button className="bg-teal-500 text-white hover:bg-teal-700">
+                    Learn More
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Call to Action Section */}
-      <section className="text-center">
-        <h2 className="text-3xl font-semibold text-primary mb-4">Ready to bring your vision to life?</h2>
-        <p className="text-foreground mb-8">
-          Contact us today to discover how Thinknexus can help you leverage the power of AI for your next
-          project.
-        </p>
-        <Button className="bg-accent text-background hover:bg-accent-foreground">Get in Touch</Button>
+      <section
+        className="relative z-10 py-16 text-center"
+        style={{
+          background: 'linear-gradient(135deg, #0D47A1 0%, #1A237E 100%)',
+          color: '#F5F5F5',
+        }}
+      >
+        <div className="container mx-auto">
+          <h2 className="text-3xl font-semibold mb-4">
+            Ready to bring your vision to life?
+          </h2>
+          <p className="text-lg mb-8 px-4 md:px-0">
+            Contact us today to discover how Thinknexus can help you leverage
+            the power of AI for your next project.
+          </p>
+          <Button className="bg-teal-500 text-white hover:bg-teal-700">
+            Get in Touch
+          </Button>
+        </div>
       </section>
     </div>
   );
