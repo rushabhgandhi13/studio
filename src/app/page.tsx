@@ -81,7 +81,7 @@ const AnimatedText = ({text}: {text: string}) => {
 };
 
 function getRandomColor() {
-  const letters = '0123456789ABCDEF';
+  const letters = 'ABCDEF0123456789';
   let color = '#';
   for (let i = 0; i < 6; i++) {
     color += letters[Math.floor(Math.random() * 16)];
@@ -196,13 +196,13 @@ export default function Home() {
       <section
         className="relative z-10 text-center py-24 md:py-36"
         style={{
-          background: 'linear-gradient(135deg, #1A237E 0%, #0D47A1 100%)',
+          background: 'linear-gradient(135deg, #FF5722 0%, #E64A19 100%)',
           color: '#F5F5F5',
         }}
       >
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
           Transforming Ideas into{' '}
-          <span style={{color: '#00BCD4'}}>
+          <span style={{color: '#FFC107'}}>
             <AnimatedText text="Intelligent Solutions" />
           </span>
         </h1>
@@ -211,7 +211,7 @@ export default function Home() {
           outsourcing company. Our mission is to transform your ideas into
           reality through cutting-edge technology and innovative solutions.
         </p>
-        <Button className="bg-teal-500 text-white hover:bg-teal-700">
+        <Button className="bg-orange-500 text-white hover:bg-orange-700">
           Explore Our Services
         </Button>
       </section>
@@ -248,7 +248,7 @@ export default function Home() {
                   <p className="text-foreground mb-4">
                     {summaries[item.title] || 'Loading summary...'}
                   </p>
-                  <Button className="bg-teal-500 text-white hover:bg-teal-700">
+                  <Button className="bg-orange-500 text-white hover:bg-orange-700">
                     Learn More
                   </Button>
                 </CardContent>
@@ -262,7 +262,7 @@ export default function Home() {
       <section
         className="relative z-10 py-16 text-center"
         style={{
-          background: 'linear-gradient(135deg, #0D47A1 0%, #1A237E 100%)',
+          background: 'linear-gradient(135deg, #E64A19 0%, #FF5722 100%)',
           color: '#F5F5F5',
         }}
       >
@@ -274,7 +274,7 @@ export default function Home() {
             Contact us today to discover how Thinknexus can help you leverage
             the power of AI for your next project.
           </p>
-          <Button className="bg-teal-500 text-white hover:bg-teal-700">
+          <Button className="bg-orange-500 text-white hover:bg-orange-700">
             Get in Touch
           </Button>
         </div>
@@ -282,3 +282,4 @@ export default function Home() {
     </div>
   );
 }
+
